@@ -25,9 +25,11 @@ class Position:
         self.y = y
         self.color = color
 
+    # Wandelt eine Kästchenposition in eine richtige Pygame Position um
     def to_pygame_pos(self) -> Tuple[int, int]:
         return (self.x * BLOCK_SIZE[0], self.y * BLOCK_SIZE[1])
 
+    # Rendert einen Block mit der angegeben Farbe an der angegeben Position
     def render(self):
         assert self.color != None
         start = self.to_pygame_pos()
@@ -41,11 +43,17 @@ def random_position() -> Position:
 
 # Position vom Apfel
 apple = random_position()
-apple.color = (255, 0, 0)
+apple.color = (255, 0, 0)  # Rot
 
 
 def render():
     apple.render()
+
+    # Die Gridlinien zeichnen
+    for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
+        pygame.draw.line(screen, (255, 255, 255), (x, 0), (x, SCREEN[0]))
+    for y in range(BLOCK_SIZE[1], SCREEN[1], BLOCK_SIZE[1]):
+        pygame.draw.line(screen, (255, 255, 255), (0, y), (SCREEN[1], y))
 
 
 running = True
