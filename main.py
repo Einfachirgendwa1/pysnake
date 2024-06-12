@@ -70,6 +70,7 @@ def render():
 
     surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     color = pygame.Color(100, 100, 100, 50)
+    #                     r    g    b   alpha wert
     # Die Gridlinien zeichnen
     for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
         pygame.draw.line(surface, color, (x, 0), (x, SCREEN[0]))
