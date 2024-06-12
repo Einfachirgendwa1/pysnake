@@ -31,10 +31,7 @@ class Position:
     def render(self):
         assert self.color != None
         start = self.to_pygame_pos()
-        end = list(self.to_pygame_pos())
-        end[0] += BLOCK_SIZE[0]
-        end[1] += BLOCK_SIZE[1]
-        pygame.draw.rect(screen, self.color, (start, end))
+        pygame.draw.rect(screen, self.color, (start, BLOCK_SIZE))
 
 
 # Generiert eine zufällige Kästchenposition
