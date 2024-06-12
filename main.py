@@ -41,6 +41,9 @@ class Position:
 def random_position() -> Position:
     return Position(random.randint(0, GRID_SIZE[0]), random.randint(0, GRID_SIZE[1]))
 
+class snake:
+    def __init__(self):
+        
 
 # Position vom Apfel
 apple = random_position()
