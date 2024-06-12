@@ -19,27 +19,39 @@ class Position:
     def __init__(
         self, x: int, y: int, color: Optional[Tuple[int, int, int]] = None
     ) -> None:
-        assert x <= GRID_SIZE[0]
-        assert y <= GRID_SIZE[1]
+        assert (
+            0 <= x <= GRID_SIZE[0]
+        ), f"Fehler beim Initialiseren von x beim Konstruieren einer Position: {x}"
+        assert (
+            0 <= y <= GRID_SIZE[1]
+        ), f"Fehler beim Initialiseren von y beim Konstruieren einer Position: {y}"
         self.x = x
         self.y = y
         self.color = color
 
+    # Wandelt eine Kästchenposition in eine richtige Pygame Position um
     def to_pygame_pos(self) -> Tuple[int, int]:
         return (self.x * BLOCK_SIZE[0], self.y * BLOCK_SIZE[1])
 
+    # Rendert einen Block mit der angegeben Farbe an der angegeben Position
     def render(self):
-        assert self.color != None
+        assert self.color != None, f"Render auf {self} gerufen, aber color ist None"
+        assert (
+            0 <= self.x < GRID_SIZE[0]
+        ), f"Render auf {self} gerufen, aber X ist invalid: {self.x}"
+        assert (
+            0 <= self.y < GRID_SIZE[1]
+        ), f"Render auf {self} gerufen, aber Y ist invalid: {self.y}"
+
         start = self.to_pygame_pos()
-        end = list(self.to_pygame_pos())
-        end[0] += BLOCK_SIZE[0]
-        end[1] += BLOCK_SIZE[1]
-        pygame.draw.rect(screen, self.color, (start, end))
+        pygame.draw.rect(screen, self.color, (start, BLOCK_SIZE))
 
 
 # Generiert eine zufällige Kästchenposition
 def random_position() -> Position:
-    return Position(random.randint(0, GRID_SIZE[0]), random.randint(0, GRID_SIZE[1]))
+    return Position(
+        random.randint(0, GRID_SIZE[0] - 1), random.randint(0, GRID_SIZE[1] - 1)
+    )
 
 class snake:
     def __init__(self):
@@ -47,11 +59,18 @@ class snake:
 
 # Position vom Apfel
 apple = random_position()
-apple.color = (255, 0, 0)
+apple.color = (255, 0, 0)  # Rot
 
 
 def render():
     apple.render()
+
+    color = pygame.Color(100, 100, 100)
+    # Die Gridlinien zeichnen
+    for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
+        pygame.draw.line(screen, color, (x, 0), (x, SCREEN[0]))
+    for y in range(BLOCK_SIZE[1], SCREEN[1], BLOCK_SIZE[1]):
+        pygame.draw.line(screen, color, (0, y), (SCREEN[1], y))
 
 
 running = True
