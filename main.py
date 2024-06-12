@@ -1,6 +1,5 @@
 import random
 from typing import Optional, Tuple
-
 import pygame
 
 # Size vom erstellten Fenster
@@ -56,6 +55,15 @@ def random_position() -> Position:
 apple = random_position()
 apple.color = (255, 0, 0)  # Rot
 
+def key_listener():
+    joystick_x = 0
+    joystick_y = 0
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w]: joystick_y += 1
+    if keys[pygame.K_s]: joystick_y -= 1
+    if keys[pygame.K_a]: joystick_x -= 1
+    if keys[pygame.K_d]: joystick_x += 1
+    return (joystick_x, joystick_y)
 
 def render():
     apple.render()
