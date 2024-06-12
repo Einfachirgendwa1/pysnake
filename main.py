@@ -19,8 +19,12 @@ class Position:
     def __init__(
         self, x: int, y: int, color: Optional[Tuple[int, int, int]] = None
     ) -> None:
-        assert x <= GRID_SIZE[0]
-        assert y <= GRID_SIZE[1]
+        assert (
+            0 <= x <= GRID_SIZE[0]
+        ), f"Fehler beim Initialiseren von x beim Konstruieren einer Position: {x}"
+        assert (
+            0 <= y <= GRID_SIZE[1]
+        ), f"Fehler beim Initialiseren von y beim Konstruieren einer Position: {y}"
         self.x = x
         self.y = y
         self.color = color
@@ -31,14 +35,23 @@ class Position:
 
     # Rendert einen Block mit der angegeben Farbe an der angegeben Position
     def render(self):
-        assert self.color != None
+        assert self.color != None, f"Render auf {self} gerufen, aber color ist None"
+        assert (
+            0 <= self.x < GRID_SIZE[0]
+        ), f"Render auf {self} gerufen, aber X ist invalid: {self.x}"
+        assert (
+            0 <= self.y < GRID_SIZE[1]
+        ), f"Render auf {self} gerufen, aber Y ist invalid: {self.y}"
+
         start = self.to_pygame_pos()
         pygame.draw.rect(screen, self.color, (start, BLOCK_SIZE))
 
 
 # Generiert eine zufällige Kästchenposition
 def random_position() -> Position:
-    return Position(random.randint(0, GRID_SIZE[0]), random.randint(0, GRID_SIZE[1]))
+    return Position(
+        random.randint(0, GRID_SIZE[0] - 1), random.randint(0, GRID_SIZE[1] - 1)
+    )
 
 
 # Position vom Apfel
