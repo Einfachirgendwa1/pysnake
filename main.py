@@ -49,11 +49,12 @@ apple.color = (255, 0, 0)  # Rot
 def render():
     apple.render()
 
+    color = pygame.Color(100, 100, 100)
     # Die Gridlinien zeichnen
     for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
-        pygame.draw.line(screen, (255, 255, 255), (x, 0), (x, SCREEN[0]))
+        pygame.draw.line(screen, color, (x, 0), (x, SCREEN[0]))
     for y in range(BLOCK_SIZE[1], SCREEN[1], BLOCK_SIZE[1]):
-        pygame.draw.line(screen, (255, 255, 255), (0, y), (SCREEN[1], y))
+        pygame.draw.line(screen, color, (0, y), (SCREEN[1], y))
 
 
 running = True
