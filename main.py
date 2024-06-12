@@ -1,4 +1,3 @@
-# pyright:strict
 import random
 from typing import Optional, Tuple
 
