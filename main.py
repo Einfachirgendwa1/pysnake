@@ -4,7 +4,6 @@ from typing import Optional, Tuple
 
 import pygame
 
-##
 # Size vom erstellten Fenster
 SCREEN = 800, 800
 GRID_SIZE = 25, 25
