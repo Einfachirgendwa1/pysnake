@@ -3,7 +3,7 @@ import random
 from typing import Tuple
 
 import pygame
-
+#HALLLOOOOOOOOOO
 # Size vom erstellten Fenster
 SCREEN = 800, 800
 GRID_SIZE = 25, 25
