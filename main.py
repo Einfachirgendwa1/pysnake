@@ -68,13 +68,14 @@ def key_listener():
 def render():
     apple.render()
 
-    color = pygame.Color(100, 100, 100)
+    surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+    color = pygame.Color(100, 100, 100, 50)
     # Die Gridlinien zeichnen
     for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
-        pygame.draw.line(screen, color, (x, 0), (x, SCREEN[0]))
+        pygame.draw.line(surface, color, (x, 0), (x, SCREEN[0]))
     for y in range(BLOCK_SIZE[1], SCREEN[1], BLOCK_SIZE[1]):
-        pygame.draw.line(screen, color, (0, y), (SCREEN[1], y))
-
+        pygame.draw.line(surface, color, (0, y), (SCREEN[1], y))
+    screen.blit(surface, (0,0))
 
 running = True
 while running:
