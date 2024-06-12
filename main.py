@@ -53,10 +53,6 @@ def random_position() -> Position:
         random.randint(0, GRID_SIZE[0] - 1), random.randint(0, GRID_SIZE[1] - 1)
     )
 
-class snake:
-    def __init__(self):
-        
-
 # Position vom Apfel
 apple = random_position()
 apple.color = (255, 0, 0)  # Rot
