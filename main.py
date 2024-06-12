@@ -59,3 +59,4 @@ while running:
 
     render()
     pygame.display.flip()
+    screen.fill((30))
