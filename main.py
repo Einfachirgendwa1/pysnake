@@ -1,18 +1,30 @@
 import random
-from typing import List, Literal, Optional, Tuple
+from typing import Callable, List, Literal, Optional, Tuple, Union
 
 import pygame
+from pygame.rect import RectType
 
 # Size vom erstellten Fenster
 SCREEN = 800, 800
 GRID_SIZE = 25, 25
 
+TITLESCREEN_SIZE_MAX = 55
+TITLESCREEN_SIZE_MIN = 50
 SNAKE_MOVES_PER_SECOND = 7.5
 
 BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 
+mode: Literal["titlescreen", "pausemenu", "game"] = "titlescreen"
+titlescreen_size = TITLESCREEN_SIZE_MIN
+titlescreen_growing = True
+
+button_checks: List[Tuple[int, int, int, int, Callable]] = []
+
 pygame.init()
 screen = pygame.display.set_mode(SCREEN)
+pygame.display.set_caption("PySnake", "PySnake")
+
+font = pygame.font.Font(None, 36)
 
 
 # Snake ist ja in Kästchen aufgeteilt, und das ist quasi eine Kästchenposition
@@ -154,26 +166,105 @@ def render():
     screen.blit(surface, (0, 0))
 
 
+def draw_text(
+    text: str,
+    position: Union[
+        Tuple[int, int],
+        Tuple[Literal["CenteredX", "CenteredY"], int],
+        Literal["Centered"],
+    ],
+    color: Tuple[int, int, int] = (255, 255, 255),
+    size: float = 1,
+    on_click: Optional[Callable] = None,
+):
+    text_surface = font.render(text, True, color)
+    text_surface = pygame.transform.scale(
+        text_surface, [scl * size for scl in text_surface.get_size()]
+    )
+    result_position: Union[Tuple[int, int], RectType] = (0, 0)
+    if position is not Tuple[int, int]:
+        center = screen.get_rect().center
+        text_rect = text_surface.get_rect(center=center)
+        if position == "Centered":
+            result_position = text_rect
+        else:
+            if position[0] == "CenteredX":
+                result_position = (text_rect.x, position[1])
+            else:
+                result_position = (position[1], text_rect.y)
+    else:
+        result_position = position
+
+    screen.blit(text_surface, result_position)
+
+    if on_click:
+        rect = text_surface.get_rect(center=result_position)
+        button_checks.append(
+            (rect.x, rect.y, rect.x + rect.size[0], rect.y + rect.size[1], on_click)
+        )
+
+
 last_snake_move: Optional[int] = None
+
+
+def start_game():
+    global mode, apple, snake
+    print("Starte Spiel")
+    mode = "game"
+
+    # Position vom Apfel
+    apple = random_position()
+    apple.color = (255, 0, 0)  # Rot
+
+    snake = Snake(3)
+
 
 running = True
 while running:
     for event in pygame.event.get():
-        if event.type is pygame.QUIT:
+        if event.type == pygame.QUIT:
             running = False
-    if (
-        not last_snake_move
-        or pygame.time.get_ticks() - last_snake_move > 1000 / SNAKE_MOVES_PER_SECOND
-    ):
-        snake.move()
-        last_snake_move = pygame.time.get_ticks()
 
-    snake.check_direction()
-    render()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse = pygame.mouse.get_pos()
+            for button in button_checks:
+                print(f"Mouse: {mouse}\nButton: {button}")
+                if (
+                    button[0] <= mouse[0] <= button[2]
+                    and button[1] <= mouse[1] <= button[3]
+                ):
+                    button[4]()
+            button_checks = []
 
-    if snake.dead:
-        print("Schlange tot :(")
-        running = False
+    match mode:
+        case "titlescreen":
+            draw_text("PySnake!", ("CenteredX", 100))
+            draw_text("Start Game", ("CenteredX", 400), on_click=start_game)
+
+            if titlescreen_growing:
+                titlescreen_size += 0.001
+                if titlescreen_size > TITLESCREEN_SIZE_MAX:
+                    titlescreen_growing = False
+            else:
+                titlescreen_size -= 0.001
+                if titlescreen_size < TITLESCREEN_SIZE_MIN:
+                    titlescreen_growing = True
+
+        case "game":
+            if (
+                not last_snake_move
+                or pygame.time.get_ticks() - last_snake_move
+                > 1000 / SNAKE_MOVES_PER_SECOND
+            ):
+                snake.move()
+                last_snake_move = pygame.time.get_ticks()
+
+            snake.check_direction()
+            render()
+
+            if snake.dead:
+                print("Schlange tot :(")
+                mode = "titlescreen"
 
     pygame.display.flip()
     screen.fill((30))
