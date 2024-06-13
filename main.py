@@ -70,6 +70,14 @@ class snake:
         self.parts.append((self.head_pos.x, self.head_pos.y))
         if len(self.parts)>self.max_length:
             self.parts.pop(0)
+        global apple
+        if self.head_pos.x == apple.x and self.head_pos.y == apple.y:
+            try:
+                apple = random_position()
+                apple.color = (255, 0, 0) 
+                self.max_length +=1
+            except SyntaxError:
+                pass
     
     def render(self):
         for i in self.parts:
