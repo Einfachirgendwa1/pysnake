@@ -1,6 +1,8 @@
 import random
 from typing import Optional, Tuple
 import pygame
+import time
+import math
 
 # Size vom erstellten Fenster
 SCREEN = 800, 800
@@ -51,22 +53,52 @@ def random_position() -> Position:
         random.randint(0, GRID_SIZE[0] - 1), random.randint(0, GRID_SIZE[1] - 1)
     )
 
+class snake:
+    def __init__(self, length):
+        self.head_pos = random_position()
+        self.max_length = length
+        self.dir = 0
+        self.parts = []
+        self.color = (0 ,255, 0)
+
+    def move(self):
+        dir = key_listener()
+        if dir != (self.dir+180)%360 and dir != None:
+            self.dir = dir
+        self.head_pos.x += math.sin(math.radians(self.dir))
+        self.head_pos.y += math.cos(math.radians(self.dir))
+        self.parts.append((self.head_pos.x, self.head_pos.y))
+        if len(self.parts)>self.max_length:
+            self.parts.pop(0)
+    
+    def render(self):
+        for i in self.parts:
+            y = i[1]* BLOCK_SIZE[1]
+            x = i[0] * BLOCK_SIZE[0] 
+            pygame.draw.rect(screen, self.color, ((x,y), BLOCK_SIZE))     
+
+
 # Position vom Apfel
 apple = random_position()
 apple.color = (255, 0, 0)  # Rot
 
+a_snake = snake(3)
+
 def key_listener():
-    joystick_x = 0
-    joystick_y = 0
+    dir = 0
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]: joystick_y += 1
-    if keys[pygame.K_s]: joystick_y -= 1
-    if keys[pygame.K_a]: joystick_x -= 1
-    if keys[pygame.K_d]: joystick_x += 1
-    return (joystick_x, joystick_y)
+    if keys[pygame.K_w]: dir += 180
+    if keys[pygame.K_s]: dir -= 360
+    if keys[pygame.K_a]: dir -= 90
+    if keys[pygame.K_d]: dir += 90
+    if dir != 0:
+        return ((dir+360)%360)
+    else: 
+        return None
 
 def render():
     apple.render()
+    a_snake.render()
 
     surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     color = pygame.Color(100, 100, 100, 50)
@@ -83,7 +115,8 @@ while running:
     for event in pygame.event.get():
         if event.type is pygame.QUIT:
             running = False
-
+    a_snake.move()
     render()
     pygame.display.flip()
     screen.fill((30))
+    time.sleep(0.2)
