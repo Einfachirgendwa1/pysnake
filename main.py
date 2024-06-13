@@ -35,15 +35,15 @@ class Position:
     def to_pygame_pos(self) -> Tuple[int, int]:
         return (self.x * BLOCK_SIZE[0], self.y * BLOCK_SIZE[1])
 
+    def is_valid(self) -> bool:
+        return 0 <= self.x < GRID_SIZE[0] and 0 <= self.y < GRID_SIZE[1]
+
     # Rendert einen Block mit der angegeben Farbe an der angegeben Position
     def render(self):
         assert self.color != None, f"Render auf {self} gerufen, aber color ist None"
         assert (
-            0 <= self.x < GRID_SIZE[0]
-        ), f"Render auf {self} gerufen, aber X ist invalid: {self.x}"
-        assert (
-            0 <= self.y < GRID_SIZE[1]
-        ), f"Render auf {self} gerufen, aber Y ist invalid: {self.y}"
+            self.is_valid()
+        ), f"Render auf {self} gerufen, aber die Position ist invalid!"
 
         start = self.to_pygame_pos()
         pygame.draw.rect(screen, self.color, (start, BLOCK_SIZE))
@@ -69,6 +69,7 @@ class Snake:
         self.direction: Direction = "Down"
         self.parts: List[Position] = []
         self.color = (0, 255, 0)
+        self.dead = False
 
     def check_direction(self):
         key_input = key_listener()
@@ -85,6 +86,10 @@ class Snake:
                 self.head_pos.x -= 1
             case "Right":
                 self.head_pos.x += 1
+
+        if self.head_pos in self.parts or not self.head_pos.is_valid():
+            self.dead = True
+            return
 
         self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
 
@@ -153,6 +158,10 @@ while running:
 
     snake.check_direction()
     render()
+
+    if snake.dead:
+        print("Schlange tot :(")
+        running = False
 
     pygame.display.flip()
     screen.fill((30))
