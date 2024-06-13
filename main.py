@@ -7,6 +7,8 @@ import pygame
 SCREEN = 800, 800
 GRID_SIZE = 25, 25
 
+SNAKE_MOVES_PER_SECOND = 7.5
+
 BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 
 pygame.init()
@@ -159,7 +161,10 @@ while running:
     for event in pygame.event.get():
         if event.type is pygame.QUIT:
             running = False
-    if not last_snake_move or pygame.time.get_ticks() - last_snake_move > 200:
+    if (
+        not last_snake_move
+        or pygame.time.get_ticks() - last_snake_move > 1000 / SNAKE_MOVES_PER_SECOND
+    ):
         snake.move()
         last_snake_move = pygame.time.get_ticks()
 
