@@ -94,7 +94,7 @@ class Snake:
         self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
 
         global apple
-        if self.head_pos.x == apple.x and self.head_pos.y == apple.y:
+        if self.head_pos == apple:
             apple = random_position()
             apple.color = (255, 0, 0)
             self.max_length += 1
