@@ -108,6 +108,8 @@ class Snake:
             apple = random_position()
             apple.color = (255, 0, 0)
             self.max_length += 1
+            global SNAKE_MOVES_PER_SECOND
+            SNAKE_MOVES_PER_SECOND += 0.5
 
         if len(self.parts) > self.max_length:
             self.parts.pop(0)
