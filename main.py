@@ -11,6 +11,10 @@ GRID_SIZE = 25, 25
 TITLESCREEN_SIZE_MAX = 55
 TITLESCREEN_SIZE_MIN = 50
 SNAKE_MOVES_PER_SECOND = 7.5
+SNAKE_COLOR = (166, 227, 161)
+APPLE_COLOR = (243, 139, 168)
+BACKGROUND_COLOR = (30, 30, 46)
+MAX_FPS = 60
 
 BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 
@@ -23,6 +27,7 @@ button_checks: List[Tuple[int, int, int, int, Callable]] = []
 pygame.init()
 screen = pygame.display.set_mode(SCREEN)
 pygame.display.set_caption("PySnake", "PySnake")
+clock = pygame.time.Clock()
 
 font = pygame.font.Font(None, 36)
 
@@ -82,7 +87,7 @@ class Snake:
         self.max_length = length
         self.direction: Direction = "Down"
         self.parts: List[Position] = []
-        self.color = (0, 255, 0)
+        self.color = SNAKE_COLOR
         self.dead = False
 
     def check_direction(self):
@@ -117,7 +122,7 @@ class Snake:
         global apple
         if self.head_pos == apple:
             apple = random_position()
-            apple.color = (255, 0, 0)
+            apple.color = APPLE_COLOR
             self.max_length += 1
 
         if len(self.parts) > self.max_length:
@@ -146,7 +151,7 @@ def key_listener() -> Optional[Direction]:
 
 # Position vom Apfel
 apple = random_position()
-apple.color = (255, 0, 0)  # Rot
+apple.color = APPLE_COLOR
 
 snake = Snake(3)
 
@@ -199,8 +204,16 @@ def draw_text(
 
     if on_click:
         rect = text_surface.get_rect(center=result_position)
+
+        # HACK: Das wirkt nicht richtig (das rect.size * 2)
         button_checks.append(
-            (rect.x, rect.y, rect.x + rect.size[0], rect.y + rect.size[1], on_click)
+            (
+                rect.x,
+                rect.y,
+                rect.x + rect.size[0] * 2,
+                rect.y + rect.size[1] * 2,
+                on_click,
+            )
         )
 
 
@@ -214,7 +227,7 @@ def start_game():
 
     # Position vom Apfel
     apple = random_position()
-    apple.color = (255, 0, 0)  # Rot
+    apple.color = APPLE_COLOR
 
     snake = Snake(3)
 
@@ -267,4 +280,5 @@ while running:
                 mode = "titlescreen"
 
     pygame.display.flip()
-    screen.fill((30))
+    screen.fill(BACKGROUND_COLOR)
+    clock.tick(MAX_FPS)
