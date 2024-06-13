@@ -1,6 +1,7 @@
 # pyright:strict
 import random
-from typing import Optional, Tuple
+import time
+from typing import List, Literal, Optional, Tuple
 
 import pygame
 
@@ -47,6 +48,9 @@ class Position:
         pygame.draw.rect(screen, self.color, (start, BLOCK_SIZE))
 
 
+Direction = Literal["Up", "Down", "Left", "Right"]
+
+
 # Generiert eine zufällige Kästchenposition
 def random_position() -> Position:
     return Position(
@@ -54,21 +58,79 @@ def random_position() -> Position:
     )
 
 
+class Snake:
+    def __init__(self, length: int):
+        self.head_pos = random_position()
+        self.max_length = length
+        self.direction: Direction = "Down"
+        self.parts: List[Position] = []
+        self.color = (0, 255, 0)
+
+    def check_direction(self):
+        key_input = key_listener()
+        if key_input != None:
+            self.direction = key_input
+
+    def move(self):
+        match self.direction:
+            case "Up":
+                self.head_pos.y -= 1
+            case "Down":
+                self.head_pos.y += 1
+            case "Left":
+                self.head_pos.x -= 1
+            case "Right":
+                self.head_pos.x += 1
+
+        self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
+
+        if len(self.parts) > self.max_length:
+            self.parts.pop(0)
+
+    def render(self):
+        for part in self.parts:
+            part.render()
+
+
+def key_listener() -> Optional[Direction]:
+    direction = None
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w]:
+        direction = "Up"
+    if keys[pygame.K_s]:
+        direction = "Down"
+    if keys[pygame.K_a]:
+        direction = "Left"
+    if keys[pygame.K_d]:
+        direction = "Right"
+
+    return direction
+
+
 # Position vom Apfel
 apple = random_position()
 apple.color = (255, 0, 0)  # Rot
 
+snake = Snake(3)
+
 
 def render():
     apple.render()
+    snake.render()
 
-    color = pygame.Color(100, 100, 100)
+    surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+    color = pygame.Color(100, 100, 100, 50)
+    #                     r    g    b   alpha wert
     # Die Gridlinien zeichnen
     for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
-        pygame.draw.line(screen, color, (x, 0), (x, SCREEN[0]))
+        pygame.draw.line(surface, color, (x, 0), (x, SCREEN[0]))
     for y in range(BLOCK_SIZE[1], SCREEN[1], BLOCK_SIZE[1]):
-        pygame.draw.line(screen, color, (0, y), (SCREEN[1], y))
+        pygame.draw.line(surface, color, (0, y), (SCREEN[1], y))
+    screen.blit(surface, (0, 0))
 
+
+last_snake_move: Optional[int] = None
 
 running = True
 while running:
@@ -76,6 +138,12 @@ while running:
         if event.type is pygame.QUIT:
             running = False
 
+    if not last_snake_move or pygame.time.get_ticks() - last_snake_move > 200:
+        snake.move()
+        last_snake_move = pygame.time.get_ticks()
+
+    snake.check_direction()
     render()
+
     pygame.display.flip()
     screen.fill((30))
