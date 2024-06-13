@@ -7,7 +7,7 @@ import pygame
 SCREEN = 800, 800
 GRID_SIZE = 25, 25
 
-SNAKE_MOVES_PER_SECOND = 7.5
+SNAKE_MOVES_PER_SECOND = 5 #Orginal: 7.5
 
 BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 
@@ -109,7 +109,7 @@ class Snake:
             apple.color = (255, 0, 0)
             self.max_length += 1
             global SNAKE_MOVES_PER_SECOND
-            SNAKE_MOVES_PER_SECOND += 0.5
+            SNAKE_MOVES_PER_SECOND += 0.25
 
         if len(self.parts) > self.max_length:
             self.parts.pop(0)
