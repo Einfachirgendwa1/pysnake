@@ -55,7 +55,7 @@ Direction = Literal["Up", "Down", "Left", "Right"]
 
 # Generiert eine zufällige Kästchenposition
 def random_position(
-    min=Position(0, 0), max=Position(GRID_SIZE[0] - 1, GRID_SIZE[1])
+    min=Position(0, 0), max=Position(GRID_SIZE[0] - 1, GRID_SIZE[1] - 1)
 ) -> Position:
     return Position(random.randint(min.x, max.x), random.randint(min.y, max.y))
 
