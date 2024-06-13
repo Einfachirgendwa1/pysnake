@@ -3,7 +3,6 @@ from typing import List, Literal, Optional, Tuple
 
 import pygame
 
-#
 # Size vom erstellten Fenster
 SCREEN = 800, 800
 GRID_SIZE = 25, 25
@@ -75,6 +74,13 @@ class Snake:
     def check_direction(self):
         key_input = key_listener()
         if key_input != None:
+            if (
+                (self.direction == "Up" and key_input == "Down")
+                or (self.direction == "Down" and key_input == "Up")
+                or (self.direction == "Left" and key_input == "Right")
+                or (self.direction == "Right" and key_input == "Left")
+            ):
+                return
             self.direction = key_input
 
     def move(self):
