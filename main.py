@@ -86,13 +86,18 @@ class Snake:
             case "Right":
                 self.head_pos.x += 1
 
-        self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
+        if (self.head_pos.x, self.head_pos.y) not in self.parts:
+           self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color)
+        else:
+            assert False, f"SNAKE DIED!"
 
         global apple
-        if self.head_pos.x == apple.x and self.head_pos.y == apple.y:
-            apple = random_position()
-            apple.color = (255, 0, 0)
-            self.max_length += 1
+        for i in self.parts:
+            if i[0]== apple.x:
+                if i[1] == apple.y:
+                    apple = random_position()
+                    apple.color = (255, 0, 0) 
+                    self.max_length +=1
 
         if len(self.parts) > self.max_length:
             self.parts.pop(0)
