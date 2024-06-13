@@ -87,7 +87,7 @@ class Snake:
                 self.head_pos.x += 1
 
         if (self.head_pos.x, self.head_pos.y) not in self.parts:
-           self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color)
+           self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
         else:
             assert False, f"SNAKE DIED!"
 
