@@ -65,17 +65,22 @@ class snake:
         dir = key_listener()
         if dir != (self.dir+180)%360 and dir != None:
             self.dir = dir
-        self.head_pos.x += math.sin(math.radians(self.dir))
-        self.head_pos.y += math.cos(math.radians(self.dir))
-        self.parts.append((self.head_pos.x, self.head_pos.y))
+        self.head_pos.x += int(math.sin(math.radians(self.dir)))
+        self.head_pos.y += int(math.cos(math.radians(self.dir)))
+        if (self.head_pos.x, self.head_pos.y) not in self.parts:
+            self.parts.append((self.head_pos.x, self.head_pos.y))
+        else:
+            assert False, f"SNAKE DIED!"
         if len(self.parts)>self.max_length:
             self.parts.pop(0)
         global apple
-        if self.head_pos.x == apple.x and self.head_pos.y == apple.y:
-            apple = random_position()
-            apple.color = (255, 0, 0) 
-            self.max_length +=1
-    
+        for i in self.parts:
+            if i[0]== apple.x:
+                if i[1] == apple.y:
+                    apple = random_position()
+                    apple.color = (255, 0, 0) 
+                    self.max_length +=1
+            
     def render(self):
         for i in self.parts:
             y = i[1]* BLOCK_SIZE[1]
@@ -92,12 +97,12 @@ a_snake = snake(3)
 def key_listener():
     dir = 0
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]: dir += 180
-    if keys[pygame.K_s]: dir -= 360
-    if keys[pygame.K_a]: dir -= 90
-    if keys[pygame.K_d]: dir += 90
+    if keys[pygame.K_w]: dir = 180
+    if keys[pygame.K_s]: dir = 360
+    if keys[pygame.K_a]: dir = 270
+    if keys[pygame.K_d]: dir = 90
     if dir != 0:
-        return ((dir+360)%360)
+        return ((dir)%360)
     else: 
         return None
 
