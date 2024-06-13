@@ -1,6 +1,4 @@
-# pyright:strict
 import random
-import time
 from typing import List, Literal, Optional, Tuple
 
 import pygame
@@ -30,6 +28,9 @@ class Position:
         self.y = y
         self.color = color
 
+    def __eq__(self, value: object, /) -> bool:
+        return isinstance(value, Position) and self.x == value.x and self.y == value.y
+
     # Wandelt eine Kästchenposition in eine richtige Pygame Position um
     def to_pygame_pos(self) -> Tuple[int, int]:
         return (self.x * BLOCK_SIZE[0], self.y * BLOCK_SIZE[1])
@@ -52,15 +53,18 @@ Direction = Literal["Up", "Down", "Left", "Right"]
 
 
 # Generiert eine zufällige Kästchenposition
-def random_position() -> Position:
-    return Position(
-        random.randint(0, GRID_SIZE[0] - 1), random.randint(0, GRID_SIZE[1] - 1)
-    )
+def random_position(
+    min=Position(0, 0), max=Position(GRID_SIZE[0] - 1, GRID_SIZE[1])
+) -> Position:
+    return Position(random.randint(min.x, max.x), random.randint(min.y, max.y))
 
 
 class Snake:
     def __init__(self, length: int):
-        self.head_pos = random_position()
+        self.head_pos = random_position(
+            min=Position(5, 5),
+            max=Position(10, 10),  # Die Snake irgendwo in der Mitte spawnen
+        )
         self.max_length = length
         self.direction: Direction = "Down"
         self.parts: List[Position] = []
@@ -83,6 +87,12 @@ class Snake:
                 self.head_pos.x += 1
 
         self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
+
+        global apple
+        if self.head_pos.x == apple.x and self.head_pos.y == apple.y:
+            apple = random_position()
+            apple.color = (255, 0, 0)
+            self.max_length += 1
 
         if len(self.parts) > self.max_length:
             self.parts.pop(0)
@@ -137,7 +147,6 @@ while running:
     for event in pygame.event.get():
         if event.type is pygame.QUIT:
             running = False
-
     if not last_snake_move or pygame.time.get_ticks() - last_snake_move > 200:
         snake.move()
         last_snake_move = pygame.time.get_ticks()
