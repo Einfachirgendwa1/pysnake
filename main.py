@@ -26,6 +26,8 @@ titlescreen_size = TITLESCREEN_SIZE_MIN
 titlescreen_growing = True
 score = 0
 fontsize = 36
+pause_drawn = False
+pause_pressed = False
 
 button_checks: List["Button"] = []
 
@@ -200,6 +202,7 @@ class Button:
 
 def key_listener() -> Optional[Direction]:
     direction = None
+    global mode, pause_drawn, pause_pressed
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]:
@@ -210,6 +213,18 @@ def key_listener() -> Optional[Direction]:
         direction = "Left"
     if keys[pygame.K_d]:
         direction = "Right"
+
+    if keys[pygame.K_ESCAPE]:
+        if not pause_pressed:
+            if mode != "pausemenu":
+                mode = "pausemenu"
+                pause_drawn = False
+            else:
+                mode = "game"
+                pause_drawn = True
+            pause_pressed = True
+    else:
+        pause_pressed = False
 
     return direction
 
@@ -272,6 +287,9 @@ def render():
         (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
     )
     screen.blit(surface, (0, 0))
+
+    draw_text(f"Score: {score}", (10, 10))
+    draw_text(f"Highscore: {highscore}", (10, 35))
 
 
 def draw_text(
@@ -378,9 +396,6 @@ while running:
             snake.check_direction()
             render()
 
-            draw_text(f"Score: {score}", (10, 10))
-            draw_text(f"Highscore: {highscore}", (10, 35))
-
             if snake.dead:
                 print("Schlange tot :(")
                 if score > highscore:
@@ -391,6 +406,12 @@ while running:
                 mode = "titlescreen"
                 fontsize = 36
                 genfont()
+
+        case "pausemenu":
+            render()
+            draw_text("Pause", "Centered")
+            pygame.display.flip()
+            key_listener()
 
     pygame.display.flip()
     screen.fill(BACKGROUND_COLOR)
