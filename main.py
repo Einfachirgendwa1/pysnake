@@ -1,21 +1,64 @@
+import os
 import random
-from typing import List, Literal, Optional, Tuple
+from typing import Callable, List, Literal, Optional, Tuple, Union, cast
 
 import pygame
+from pygame.rect import RectType
 
 # Size vom erstellten Fenster
-SCREEN = 800, 800
+WINDOW = 800, 1000
+SCREEN = 800, 900
+WINDOW_SCREEN_OFFSET = (0, 100)
 GRID_SIZE = 25, 25
 
-SNAKE_MOVES_PER_SECOND = 5 #Orginal: 7.5
+SNAKE_MOVES_PER_SECOND = 5
+TITLESCREEN_SIZE_MAX = 55
+TITLESCREEN_SIZE_MIN = 50
+SNAKE_COLOR = (166, 227, 161)
+APPLE_COLOR = (243, 139, 168)
+BACKGROUND_COLOR = (30, 30, 46)
+MAX_FPS = 169
 
 BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 
+mode: Literal["titlescreen", "pausemenu", "game"] = "titlescreen"
+titlescreen_size = TITLESCREEN_SIZE_MIN
+titlescreen_growing = True
+score = 0
+fontsize = 36
+
+button_checks: List["Button"] = []
+
 pygame.init()
-screen = pygame.display.set_mode(SCREEN)
+screen = pygame.display.set_mode(WINDOW)
 pygame.display.set_caption("PySnake", "PySnake")
 icon = pygame.image.load("PySnake_icon.png")
 pygame.display.set_icon(icon)
+clock = pygame.time.Clock()
+
+font = pygame.font.Font(None, fontsize)
+
+
+def save_highscore():
+    with open("highscore.txt", "w") as file:
+        file.write(str(highscore))
+
+
+def load_highscore() -> int:
+    if os.path.exists("highscore.txt"):
+        with open("highscore.txt", "r") as file:
+            val = file.read()
+            if val.isdigit():
+                return int(val)
+    return 0
+
+
+highscore = load_highscore()
+
+
+def genfont():
+    global font
+    font = pygame.font.Font(None, fontsize)
 
 
 # Snake ist ja in Kästchen aufgeteilt, und das ist quasi eine Kästchenposition
@@ -38,7 +81,10 @@ class Position:
 
     # Wandelt eine Kästchenposition in eine richtige Pygame Position um
     def to_pygame_pos(self) -> Tuple[int, int]:
-        return (self.x * BLOCK_SIZE[0], self.y * BLOCK_SIZE[1])
+        return (
+            self.x * BLOCK_SIZE[0] + WINDOW_SCREEN_OFFSET[0],
+            self.y * BLOCK_SIZE[1] + WINDOW_SCREEN_OFFSET[1],
+        )
 
     def is_valid(self) -> bool:
         return 0 <= self.x < GRID_SIZE[0] and 0 <= self.y < GRID_SIZE[1]
@@ -73,7 +119,7 @@ class Snake:
         self.max_length = length
         self.direction: Direction = "Down"
         self.parts: List[Position] = []
-        self.color = (0, 255, 0)
+        self.color = SNAKE_COLOR
         self.dead = False
 
     def check_direction(self):
@@ -105,13 +151,14 @@ class Snake:
 
         self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
 
-        global apple
+        global apple, score
         if self.head_pos == apple:
             apple = random_position()
-            apple.color = (255, 0, 0)
+            apple.color = APPLE_COLOR
             self.max_length += 1
             global SNAKE_MOVES_PER_SECOND
             SNAKE_MOVES_PER_SECOND += 0.25
+            score += 1
 
         if len(self.parts) > self.max_length:
             self.parts.pop(0)
@@ -119,6 +166,36 @@ class Snake:
     def render(self):
         for part in self.parts:
             part.render()
+
+
+class Coordinate:
+    def __init__(self, x, y) -> None:
+        self.x = x
+        self.y = y
+
+    @classmethod
+    def from_tuple(cls, data: tuple[float, float]):
+        return cls(data[0], data[1])
+
+    def inside(self, start: "Coordinate", end: "Coordinate"):
+        return start.x <= self.x <= end.x and start.y <= self.y <= end.y
+
+
+class Button:
+    def __init__(
+        self, start: Tuple[float, float], end: Tuple[float, float], callback: Callable
+    ) -> None:
+        self.start = Coordinate.from_tuple(start)
+        self.end = Coordinate.from_tuple(end)
+        self.callback = callback
+
+    def is_clicked(self):
+        mouse = Coordinate.from_tuple(pygame.mouse.get_pos())
+        return mouse.inside(self.start, self.end)
+
+    def handle(self):
+        if self.is_clicked():
+            self.callback()
 
 
 def key_listener() -> Optional[Direction]:
@@ -139,7 +216,7 @@ def key_listener() -> Optional[Direction]:
 
 # Position vom Apfel
 apple = random_position()
-apple.color = (255, 0, 0)  # Rot
+apple.color = APPLE_COLOR
 
 snake = Snake(3)
 
@@ -151,34 +228,170 @@ def render():
     surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     color = pygame.Color(100, 100, 100, 75)
     #                     r    g    b   alpha wert
+
     # Die Gridlinien zeichnen
     for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
-        pygame.draw.line(surface, color, (x, 0), (x, SCREEN[0]))
+        x += WINDOW_SCREEN_OFFSET[0]
+        pygame.draw.line(
+            surface,
+            color,
+            (x, WINDOW_SCREEN_OFFSET[1]),
+            (x, WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+        )
     for y in range(BLOCK_SIZE[1], SCREEN[1], BLOCK_SIZE[1]):
-        pygame.draw.line(surface, color, (0, y), (SCREEN[1], y))
+        y += WINDOW_SCREEN_OFFSET[1]
+        pygame.draw.line(
+            surface,
+            color,
+            (WINDOW_SCREEN_OFFSET[0], y),
+            (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], y),
+        )
+    color = (147, 153, 178)
+    pygame.draw.line(
+        surface,
+        color,
+        WINDOW_SCREEN_OFFSET,
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1]),
+    )
+    pygame.draw.line(
+        surface,
+        color,
+        WINDOW_SCREEN_OFFSET,
+        (WINDOW_SCREEN_OFFSET[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+    )
+    pygame.draw.line(
+        surface,
+        color,
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1]),
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+    )
+    pygame.draw.line(
+        surface,
+        color,
+        (WINDOW_SCREEN_OFFSET[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+    )
     screen.blit(surface, (0, 0))
+
+
+def draw_text(
+    text: str,
+    position: Union[
+        Tuple[int, int],
+        Tuple[Literal["CenteredX", "CenteredY"], int],
+        Literal["Centered"],
+    ],
+    color: Tuple[int, int, int] = (255, 255, 255),
+    size: float = 1,
+    on_click: Optional[Callable] = None,
+):
+    text_surface = font.render(text, True, color)
+    text_surface = pygame.transform.scale(
+        text_surface, [scl * size for scl in text_surface.get_size()]
+    )
+    result_position: Union[Tuple[int, int], RectType] = (0, 0)
+    if isinstance(position, tuple) and isinstance(position[0], int):
+        result_position = cast(Tuple[int, int], position)
+    else:
+        center = screen.get_rect().center
+        text_rect = text_surface.get_rect(center=center)
+        if position == "Centered":
+            result_position = text_rect
+        else:
+            if position[0] == "CenteredX":
+                result_position = (text_rect.x, position[1])
+            else:
+                result_position = (position[1], text_rect.y)
+
+    screen.blit(text_surface, result_position)
+
+    if on_click:
+        rect = text_surface.get_rect(center=result_position)
+
+        button_checks.append(
+            Button(
+                (rect.x + rect.size[0] * 0.5, rect.y + rect.size[1] * 0.5),
+                (rect.x + rect.size[0] * 1.5, rect.y + rect.size[1] * 1.5),
+                on_click,
+            )
+        )
 
 
 last_snake_move: Optional[int] = None
 
+
+def start_game():
+    global mode, apple, snake
+    global fontsize
+
+    if mode == "game":
+        return
+    print("Starte Spiel")
+    mode = "game"
+
+    # Position vom Apfel
+    apple = random_position()
+    apple.color = APPLE_COLOR
+
+    fontsize = 30
+    genfont()
+
+    snake = Snake(3)
+
+
 running = True
 while running:
     for event in pygame.event.get():
-        if event.type is pygame.QUIT:
+        if event.type == pygame.QUIT:
             running = False
-    if (
-        not last_snake_move
-        or pygame.time.get_ticks() - last_snake_move > 1000 / SNAKE_MOVES_PER_SECOND
-    ):
-        snake.move()
-        last_snake_move = pygame.time.get_ticks()
 
-    snake.check_direction()
-    render()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse = pygame.mouse.get_pos()
+            for button in button_checks:
+                button.handle()
+            button_checks = []
 
-    if snake.dead:
-        print("Schlange tot :(")
-        running = False
+    match mode:
+        case "titlescreen":
+            draw_text("PySnake!", ("CenteredX", 100))
+            draw_text(f"Highscore: {highscore}", (10, 150))
+            draw_text("Start Game", ("CenteredX", 400), on_click=start_game)
+
+            if titlescreen_growing:
+                titlescreen_size += 0.001
+                if titlescreen_size > TITLESCREEN_SIZE_MAX:
+                    titlescreen_growing = False
+            else:
+                titlescreen_size -= 0.001
+                if titlescreen_size < TITLESCREEN_SIZE_MIN:
+                    titlescreen_growing = True
+
+        case "game":
+            if (
+                not last_snake_move
+                or pygame.time.get_ticks() - last_snake_move
+                > 1000 / SNAKE_MOVES_PER_SECOND
+            ):
+                snake.move()
+                last_snake_move = pygame.time.get_ticks()
+
+            snake.check_direction()
+            render()
+
+            draw_text(f"Score: {score}", (10, 10))
+            draw_text(f"Highscore: {highscore}", (10, 35))
+
+            if snake.dead:
+                print("Schlange tot :(")
+                if score > highscore:
+                    highscore = score
+                    print("Highscore!")
+                    save_highscore()
+                score = 0
+                mode = "titlescreen"
+                fontsize = 36
+                genfont()
 
     pygame.display.flip()
-    screen.fill((30))
+    screen.fill(BACKGROUND_COLOR)
+    clock.tick(MAX_FPS)
