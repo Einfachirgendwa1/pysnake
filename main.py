@@ -359,6 +359,11 @@ def start_game():
     snake = Snake(3)
 
 
+def quit_game():
+    global running
+    running = False
+
+
 running = True
 while running:
     for event in pygame.event.get():
@@ -376,6 +381,7 @@ while running:
             draw_text("PySnake!", ("CenteredX", 100))
             draw_text(f"Highscore: {highscore}", (10, 150))
             draw_text("Start Game", ("CenteredX", 400), on_click=start_game)
+            draw_text("Quit Game", ("CenteredX", 450), on_click=quit_game)
 
             if titlescreen_growing:
                 titlescreen_size += 0.001
