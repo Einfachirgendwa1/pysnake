@@ -152,7 +152,7 @@ class Snake:
             return
 
         self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
-        
+
         global apple, score
         if self.head_pos == apple:
             apple = random_position()
@@ -216,7 +216,7 @@ def key_listener() -> Optional[Direction]:
     if keys[pygame.K_d]:
         direction = "Right"
 
-    if keys[pygame.K_ESCAPE]:
+    if keys[pygame.K_ESCAPE] or keys[pygame.K_p]:
         if not pause_pressed:
             if mode != "pausemenu":
                 mode = "pausemenu"
