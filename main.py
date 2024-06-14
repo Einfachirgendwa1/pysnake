@@ -260,10 +260,10 @@ def draw_text(
         # FIXME: Das wirkt nicht richtig (das rect.size * 2)
         button_checks.append(
             (
-                rect.x,
-                rect.y,
-                rect.x + rect.size[0] * 2,
-                rect.y + rect.size[1] * 2,
+                rect.x+ rect.size[0]* 0.5,
+                rect.y+rect.size[1]* 0.5,
+                rect.x + rect.size[0],
+                rect.y + rect.size[1],
                 on_click,
             )
         )
