@@ -14,10 +14,11 @@ GRID_SIZE = 25, 25
 SNAKE_MOVES_PER_SECOND = 5
 TITLESCREEN_SIZE_MAX = 55
 TITLESCREEN_SIZE_MIN = 50
-SNAKE_COLOR = (166, 227, 161)
-APPLE_COLOR = (243, 139, 168)
-BACKGROUND_COLOR = (30, 30, 46)
+SNAKE_COLOR = 166, 227, 161
+APPLE_COLOR = 243, 139, 168
+BACKGROUND_COLOR = 30, 30, 46
 MAX_FPS = 169
+BLUE = 137, 180, 250
 
 BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 
@@ -395,8 +396,10 @@ while running:
     match mode:
         case "titlescreen":
             draw_text("PySnake!", ("CenteredX", 100), size=2)
-            draw_text(f"Highscore: {highscore}", (10, 150), color=(137, 180, 250))
-            draw_text("Start Game", ("CenteredX", 400), on_click=start_game)
+            draw_text(f"Highscore: {highscore}", (10, 150), color=BLUE, size=0.75)
+            draw_text(
+                "Start Game", ("CenteredX", 400), color=SNAKE_COLOR, on_click=start_game
+            )
             draw_text(
                 "Quit Game", ("CenteredX", 450), on_click=quit_game, color=APPLE_COLOR
             )
@@ -424,7 +427,7 @@ while running:
 
             color = SNAKE_COLOR if score > highscore else (255, 255, 255)
             draw_text(f"Score: {score}", (10, 10), color=color)
-            draw_text(f"Highscore: {highscore}", (10, 35))
+            draw_text(f"Highscore: {highscore}", (10, 35), color=BLUE)
 
             if snake.dead:
                 print("Schlange tot :(")
