@@ -395,8 +395,11 @@ while running:
 
     match mode:
         case "titlescreen":
-            draw_text("PySnake!", ("CenteredX", 100), size=2)
-            draw_text(f"Highscore: {highscore}", (10, 150), color=BLUE, size=0.75)
+            background = pygame.image.load("back_ground.png")
+            background.set_alpha(100)
+            screen.blit(background, (0,100))
+            draw_text("PySnake!", ("CenteredX", 25), size=2) #100
+            draw_text(f"Highscore: {highscore}", (10, 75), color=BLUE, size=0.75) #150
             draw_text(
                 "Start Game", ("CenteredX", 400), color=SNAKE_COLOR, on_click=start_game
             )
