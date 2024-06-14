@@ -14,6 +14,8 @@ BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 pygame.init()
 screen = pygame.display.set_mode(SCREEN)
 pygame.display.set_caption("PySnake", "PySnake")
+icon = pygame.image.load("PySnake_icon.png")
+pygame.display.set_icon(icon)
 
 
 # Snake ist ja in Kästchen aufgeteilt, und das ist quasi eine Kästchenposition
