@@ -170,7 +170,7 @@ class Coordinate:
         self.y = y
 
     @classmethod
-    def from_tuple(cls, data: tuple[int, int]):
+    def from_tuple(cls, data: tuple[float, float]):
         return cls(data[0], data[1])
 
     def inside(self, start: "Coordinate", end: "Coordinate"):
@@ -179,7 +179,7 @@ class Coordinate:
 
 class Button:
     def __init__(
-        self, start: Tuple[int, int], end: Tuple[int, int], callback: Callable
+        self, start: Tuple[float, float], end: Tuple[float, float], callback: Callable
     ) -> None:
         self.start = Coordinate.from_tuple(start)
         self.end = Coordinate.from_tuple(end)
@@ -307,8 +307,8 @@ def draw_text(
         # FIXME: Das wirkt nicht richtig
         button_checks.append(
             Button(
-                (rect.x, rect.y),
-                (rect.x + rect.size[0], rect.y + rect.size[1]),
+                (rect.x + rect.size[0] * 0.5, rect.y + rect.size[1] * 0.5),
+                (rect.x + rect.size[0] * 1.5, rect.y + rect.size[1] * 1.5),
                 on_click,
             )
         )
