@@ -152,14 +152,16 @@ class Snake:
             return
 
         self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
-
+        
         global apple, score
         if self.head_pos == apple:
             apple = random_position()
+            apple.color = self.color
+            while apple in self.parts:
+                apple = random_position()
+                apple.color = self.color
             apple.color = APPLE_COLOR
             self.max_length += 1
-            global SNAKE_MOVES_PER_SECOND
-            SNAKE_MOVES_PER_SECOND += 0.25
             score += 1
 
         if len(self.parts) > self.max_length:
