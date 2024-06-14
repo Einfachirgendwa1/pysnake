@@ -344,6 +344,8 @@ while running:
                     print("Highscore!")
                 score = 0
                 mode = "titlescreen"
+                fontsize = 36
+                genfont()
 
     pygame.display.flip()
     screen.fill(BACKGROUND_COLOR)
