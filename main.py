@@ -362,13 +362,25 @@ def start_game():
 def quit_game():
     global running
     running = False
+    post_game_score_setting()
+    save_highscore()
+
+
+def post_game_score_setting():
+    global score, highscore
+
+    if score > highscore:
+        highscore = score
+        print("Highscore!")
+        save_highscore()
+    score = 0
 
 
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            quit_game()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse = pygame.mouse.get_pos()
@@ -409,11 +421,7 @@ while running:
 
             if snake.dead:
                 print("Schlange tot :(")
-                if score > highscore:
-                    highscore = score
-                    print("Highscore!")
-                    save_highscore()
-                score = 0
+                post_game_score_setting()
                 mode = "titlescreen"
                 fontsize = 36
                 genfont()
