@@ -305,10 +305,14 @@ def draw_text(
     size: float = 1,
     on_click: Optional[Callable] = None,
 ):
+    global fontsize
+    fontsize_old = fontsize
+    fontsize *= size
+    fontsize = round(fontsize)
+    genfont()
     text_surface = font.render(text, True, color)
-    text_surface = pygame.transform.scale(
-        text_surface, [scl * size for scl in text_surface.get_size()]
-    )
+    fontsize = fontsize_old
+    genfont()
     result_position: Union[Tuple[int, int], RectType] = (0, 0)
     if isinstance(position, tuple) and isinstance(position[0], int):
         result_position = cast(Tuple[int, int], position)
@@ -390,10 +394,12 @@ while running:
 
     match mode:
         case "titlescreen":
-            draw_text("PySnake!", ("CenteredX", 100))
-            draw_text(f"Highscore: {highscore}", (10, 150))
+            draw_text("PySnake!", ("CenteredX", 100), size=2)
+            draw_text(f"Highscore: {highscore}", (10, 150), color=(137, 180, 250))
             draw_text("Start Game", ("CenteredX", 400), on_click=start_game)
-            draw_text("Quit Game", ("CenteredX", 450), on_click=quit_game)
+            draw_text(
+                "Quit Game", ("CenteredX", 450), on_click=quit_game, color=APPLE_COLOR
+            )
 
             if titlescreen_growing:
                 titlescreen_size += 0.001
