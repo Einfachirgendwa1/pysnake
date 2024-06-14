@@ -304,7 +304,6 @@ def draw_text(
     if on_click:
         rect = text_surface.get_rect(center=result_position)
 
-        # FIXME: Das wirkt nicht richtig
         button_checks.append(
             Button(
                 (rect.x + rect.size[0] * 0.5, rect.y + rect.size[1] * 0.5),
