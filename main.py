@@ -1,11 +1,13 @@
 import random
-from typing import Callable, List, Literal, Optional, Tuple, Union
+from typing import Callable, List, Literal, Optional, Tuple, Union, cast
 
 import pygame
 from pygame.rect import RectType
 
 # Size vom erstellten Fenster
-SCREEN = 800, 800
+WINDOW = 800, 1000
+SCREEN = 800, 900
+WINDOW_SCREEN_OFFSET = (0, 100)
 GRID_SIZE = 25, 25
 
 TITLESCREEN_SIZE_MAX = 55
@@ -14,22 +16,30 @@ SNAKE_MOVES_PER_SECOND = 7.5
 SNAKE_COLOR = (166, 227, 161)
 APPLE_COLOR = (243, 139, 168)
 BACKGROUND_COLOR = (30, 30, 46)
-MAX_FPS = 60
+MAX_FPS = 169
 
 BLOCK_SIZE = (SCREEN[0] // GRID_SIZE[0], SCREEN[1] // GRID_SIZE[1])
 
 mode: Literal["titlescreen", "pausemenu", "game"] = "titlescreen"
 titlescreen_size = TITLESCREEN_SIZE_MIN
 titlescreen_growing = True
+score = 0
+highscore = 0
+fontsize = 36
 
 button_checks: List[Tuple[int, int, int, int, Callable]] = []
 
 pygame.init()
-screen = pygame.display.set_mode(SCREEN)
+screen = pygame.display.set_mode(WINDOW)
 pygame.display.set_caption("PySnake", "PySnake")
 clock = pygame.time.Clock()
 
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(None, fontsize)
+
+
+def genfont():
+    global font
+    font = pygame.font.Font(None, fontsize)
 
 
 # Snake ist ja in Kästchen aufgeteilt, und das ist quasi eine Kästchenposition
@@ -52,7 +62,10 @@ class Position:
 
     # Wandelt eine Kästchenposition in eine richtige Pygame Position um
     def to_pygame_pos(self) -> Tuple[int, int]:
-        return (self.x * BLOCK_SIZE[0], self.y * BLOCK_SIZE[1])
+        return (
+            self.x * BLOCK_SIZE[0] + WINDOW_SCREEN_OFFSET[0],
+            self.y * BLOCK_SIZE[1] + WINDOW_SCREEN_OFFSET[1],
+        )
 
     def is_valid(self) -> bool:
         return 0 <= self.x < GRID_SIZE[0] and 0 <= self.y < GRID_SIZE[1]
@@ -119,11 +132,12 @@ class Snake:
 
         self.parts.append(Position(self.head_pos.x, self.head_pos.y, self.color))
 
-        global apple
+        global apple, score
         if self.head_pos == apple:
             apple = random_position()
             apple.color = APPLE_COLOR
             self.max_length += 1
+            score += 1
 
         if len(self.parts) > self.max_length:
             self.parts.pop(0)
@@ -163,11 +177,49 @@ def render():
     surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     color = pygame.Color(100, 100, 100, 50)
     #                     r    g    b   alpha wert
+
     # Die Gridlinien zeichnen
     for x in range(BLOCK_SIZE[0], SCREEN[0], BLOCK_SIZE[0]):
-        pygame.draw.line(surface, color, (x, 0), (x, SCREEN[0]))
+        x += WINDOW_SCREEN_OFFSET[0]
+        pygame.draw.line(
+            surface,
+            color,
+            (x, WINDOW_SCREEN_OFFSET[1]),
+            (x, WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+        )
     for y in range(BLOCK_SIZE[1], SCREEN[1], BLOCK_SIZE[1]):
-        pygame.draw.line(surface, color, (0, y), (SCREEN[1], y))
+        y += WINDOW_SCREEN_OFFSET[1]
+        pygame.draw.line(
+            surface,
+            color,
+            (WINDOW_SCREEN_OFFSET[0], y),
+            (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], y),
+        )
+    color = (147, 153, 178)
+    pygame.draw.line(
+        surface,
+        color,
+        WINDOW_SCREEN_OFFSET,
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1]),
+    )
+    pygame.draw.line(
+        surface,
+        color,
+        WINDOW_SCREEN_OFFSET,
+        (WINDOW_SCREEN_OFFSET[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+    )
+    pygame.draw.line(
+        surface,
+        color,
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1]),
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+    )
+    pygame.draw.line(
+        surface,
+        color,
+        (WINDOW_SCREEN_OFFSET[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+        (WINDOW_SCREEN_OFFSET[0] + SCREEN[0], WINDOW_SCREEN_OFFSET[1] + SCREEN[1]),
+    )
     screen.blit(surface, (0, 0))
 
 
@@ -187,7 +239,9 @@ def draw_text(
         text_surface, [scl * size for scl in text_surface.get_size()]
     )
     result_position: Union[Tuple[int, int], RectType] = (0, 0)
-    if position is not Tuple[int, int]:
+    if isinstance(position, tuple) and isinstance(position[0], int):
+        result_position = cast(Tuple[int, int], position)
+    else:
         center = screen.get_rect().center
         text_rect = text_surface.get_rect(center=center)
         if position == "Centered":
@@ -197,15 +251,13 @@ def draw_text(
                 result_position = (text_rect.x, position[1])
             else:
                 result_position = (position[1], text_rect.y)
-    else:
-        result_position = position
 
     screen.blit(text_surface, result_position)
 
     if on_click:
         rect = text_surface.get_rect(center=result_position)
 
-        # HACK: Das wirkt nicht richtig (das rect.size * 2)
+        # FIXME: Das wirkt nicht richtig (das rect.size * 2)
         button_checks.append(
             (
                 rect.x,
@@ -222,12 +274,19 @@ last_snake_move: Optional[int] = None
 
 def start_game():
     global mode, apple, snake
+    global fontsize
+
+    if mode == "game":
+        return
     print("Starte Spiel")
     mode = "game"
 
     # Position vom Apfel
     apple = random_position()
     apple.color = APPLE_COLOR
+
+    fontsize = 30
+    genfont()
 
     snake = Snake(3)
 
@@ -241,7 +300,6 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse = pygame.mouse.get_pos()
             for button in button_checks:
-                print(f"Mouse: {mouse}\nButton: {button}")
                 if (
                     button[0] <= mouse[0] <= button[2]
                     and button[1] <= mouse[1] <= button[3]
@@ -252,6 +310,7 @@ while running:
     match mode:
         case "titlescreen":
             draw_text("PySnake!", ("CenteredX", 100))
+            draw_text(f"Highscore: {highscore}", (10, 150))
             draw_text("Start Game", ("CenteredX", 400), on_click=start_game)
 
             if titlescreen_growing:
@@ -275,8 +334,15 @@ while running:
             snake.check_direction()
             render()
 
+            draw_text(f"Score: {score}", (10, 10))
+            draw_text(f"Highscore: {highscore}", (10, 35))
+
             if snake.dead:
                 print("Schlange tot :(")
+                if score > highscore:
+                    highscore = score
+                    print("Highscore!")
+                score = 0
                 mode = "titlescreen"
 
     pygame.display.flip()
