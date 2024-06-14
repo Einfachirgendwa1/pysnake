@@ -262,8 +262,8 @@ def draw_text(
             (
                 rect.x+ rect.size[0]* 0.5,
                 rect.y+rect.size[1]* 0.5,
-                rect.x + rect.size[0],
-                rect.y + rect.size[1],
+                rect.x + rect.size[0]*1.5,
+                rect.y + rect.size[1]*1.5,
                 on_click,
             )
         )
