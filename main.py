@@ -396,6 +396,9 @@ while running:
             snake.check_direction()
             render()
 
+            draw_text(f"Score: {score}", (10, 10))
+            draw_text(f"Highscore: {highscore}", (10, 35))
+
             if snake.dead:
                 print("Schlange tot :(")
                 if score > highscore:
