@@ -1,3 +1,4 @@
+import os
 import random
 from typing import Callable, List, Literal, Optional, Tuple, Union, cast
 
@@ -24,10 +25,9 @@ mode: Literal["titlescreen", "pausemenu", "game"] = "titlescreen"
 titlescreen_size = TITLESCREEN_SIZE_MIN
 titlescreen_growing = True
 score = 0
-highscore = 0
 fontsize = 36
 
-button_checks: List[Tuple[int, int, int, int, Callable]] = []
+button_checks: List["Button"] = []
 
 pygame.init()
 screen = pygame.display.set_mode(WINDOW)
@@ -35,6 +35,23 @@ pygame.display.set_caption("PySnake", "PySnake")
 clock = pygame.time.Clock()
 
 font = pygame.font.Font(None, fontsize)
+
+
+def save_highscore():
+    with open("highscore.txt", "w") as file:
+        file.write(str(highscore))
+
+
+def load_highscore() -> int:
+    if os.path.exists("highscore.txt"):
+        with open("highscore.txt", "r") as file:
+            val = file.read()
+            if val.isdigit():
+                return int(val)
+    return 0
+
+
+highscore = load_highscore()
 
 
 def genfont():
@@ -147,6 +164,36 @@ class Snake:
             part.render()
 
 
+class Coordinate:
+    def __init__(self, x, y) -> None:
+        self.x = x
+        self.y = y
+
+    @classmethod
+    def from_tuple(cls, data: tuple[int, int]):
+        return cls(data[0], data[1])
+
+    def inside(self, start: "Coordinate", end: "Coordinate"):
+        return start.x <= self.x <= end.x and start.y <= self.y <= end.y
+
+
+class Button:
+    def __init__(
+        self, start: Tuple[int, int], end: Tuple[int, int], callback: Callable
+    ) -> None:
+        self.start = Coordinate.from_tuple(start)
+        self.end = Coordinate.from_tuple(end)
+        self.callback = callback
+
+    def is_clicked(self):
+        mouse = Coordinate.from_tuple(pygame.mouse.get_pos())
+        return mouse.inside(self.start, self.end)
+
+    def handle(self):
+        if self.is_clicked():
+            self.callback()
+
+
 def key_listener() -> Optional[Direction]:
     direction = None
 
@@ -257,13 +304,11 @@ def draw_text(
     if on_click:
         rect = text_surface.get_rect(center=result_position)
 
-        # FIXME: Das wirkt nicht richtig (das rect.size * 2)
+        # FIXME: Das wirkt nicht richtig
         button_checks.append(
-            (
-                rect.x,
-                rect.y,
-                rect.x + rect.size[0] * 2,
-                rect.y + rect.size[1] * 2,
+            Button(
+                (rect.x, rect.y),
+                (rect.x + rect.size[0], rect.y + rect.size[1]),
                 on_click,
             )
         )
@@ -300,11 +345,7 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse = pygame.mouse.get_pos()
             for button in button_checks:
-                if (
-                    button[0] <= mouse[0] <= button[2]
-                    and button[1] <= mouse[1] <= button[3]
-                ):
-                    button[4]()
+                button.handle()
             button_checks = []
 
     match mode:
@@ -342,6 +383,7 @@ while running:
                 if score > highscore:
                     highscore = score
                     print("Highscore!")
+                    save_highscore()
                 score = 0
                 mode = "titlescreen"
                 fontsize = 36
