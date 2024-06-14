@@ -152,6 +152,10 @@ class Snake:
         global apple, score
         if self.head_pos == apple:
             apple = random_position()
+            apple.color = self.color
+            while apple in self.parts:
+                apple = random_position()
+                apple.color = self.color
             apple.color = APPLE_COLOR
             self.max_length += 1
             score += 1
