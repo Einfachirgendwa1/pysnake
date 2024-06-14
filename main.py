@@ -416,7 +416,8 @@ while running:
             snake.check_direction()
             render()
 
-            draw_text(f"Score: {score}", (10, 10))
+            color = SNAKE_COLOR if score > highscore else (255, 255, 255)
+            draw_text(f"Score: {score}", (10, 10), color=color)
             draw_text(f"Highscore: {highscore}", (10, 35))
 
             if snake.dead:
