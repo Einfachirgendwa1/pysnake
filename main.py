@@ -124,6 +124,7 @@ class Snake:
         self.parts: List[Position] = []
         self.color = SNAKE_COLOR
         self.dead = False
+        self.presses: List[Direction] = []
 
     def check_direction(self):
         key_input = key_listener()
@@ -135,9 +136,13 @@ class Snake:
                 or (self.direction == "Right" and key_input == "Left")
             ):
                 return
-            self.direction = key_input
+            self.presses.append(key_input)
 
     def move(self):
+        if len(self.presses):
+            if self.presses[-1] != self.direction:
+                self.direction = self.presses.pop()
+
         match self.direction:
             case "Up":
                 self.head_pos.y -= 1
@@ -397,9 +402,9 @@ while running:
         case "titlescreen":
             background = pygame.image.load("back_ground.png")
             background.set_alpha(100)
-            screen.blit(background, (0,100))
-            draw_text("PySnake!", ("CenteredX", 25), size=2) #100
-            draw_text(f"Highscore: {highscore}", (10, 75), color=BLUE, size=0.75) #150
+            screen.blit(background, (0, 100))
+            draw_text("PySnake!", ("CenteredX", 25), size=2)  # 100
+            draw_text(f"Highscore: {highscore}", (10, 75), color=BLUE, size=0.75)  # 150
             draw_text(
                 "Start Game", ("CenteredX", 400), color=SNAKE_COLOR, on_click=start_game
             )
