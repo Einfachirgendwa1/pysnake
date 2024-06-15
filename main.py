@@ -210,7 +210,7 @@ class Button:
 
 def key_listener() -> Optional[Direction]:
     direction = None
-    global mode, pause_drawn, pause_pressed
+    global mode, pause_pressed
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]:
@@ -226,10 +226,8 @@ def key_listener() -> Optional[Direction]:
         if not pause_pressed:
             if mode != "pausemenu":
                 mode = "pausemenu"
-                pause_drawn = False
             else:
                 mode = "game"
-                pause_drawn = True
             pause_pressed = True
     else:
         pause_pressed = False
@@ -386,6 +384,13 @@ def post_game_score_setting():
     score = 0
 
 
+def to_titlescreen():
+    global mode
+    mode = "titlescreen"
+    post_game_score_setting()
+    save_highscore()
+
+
 running = True
 while running:
     for event in pygame.event.get():
@@ -446,7 +451,19 @@ while running:
 
         case "pausemenu":
             render()
-            draw_text("Pause", "Centered")
+            draw_text("Pause", ("CenteredX", SCREEN[1] // 2 - 50))
+            draw_text(
+                "Back to Titlescreen",
+                ("CenteredX", SCREEN[1] // 2),
+                on_click=to_titlescreen,
+                color=APPLE_COLOR,
+            )
+            draw_text(
+                "Quit Game",
+                ("CenteredX", SCREEN[1] // 2 + 50),
+                on_click=quit_game,
+                color=APPLE_COLOR,
+            )
             pygame.display.flip()
             key_listener()
 
